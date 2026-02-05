@@ -50,7 +50,7 @@ function gradeBg(grade: string): string {
 
 export default function Home() {
   const [mode, setMode] = useState<Mode>("generate");
-  const [model, setModel] = useState<ModelId>("claude-sonnet-4-5-20250929");
+  const [model, setModel] = useState<ModelId>("claude-opus-4-6");
   const [approach, setApproach] = useState<Approach>("niki");
   const [topic, setTopic] = useState("");
   const [sentence, setSentence] = useState("");
@@ -237,11 +237,11 @@ export default function Home() {
               onChange={(e) => setModel(e.target.value as ModelId)}
               className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
             >
-              <option value="claude-sonnet-4-5-20250929">
-                Sonnet 4.5 (recommended)
-              </option>
               <option value="claude-opus-4-6">
                 Opus 4.6 (highest quality)
+              </option>
+              <option value="claude-sonnet-4-5-20250929">
+                Sonnet 4.5 (faster, cheaper)
               </option>
             </select>
           </div>
