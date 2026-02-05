@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "export",
-  images: { unoptimized: true },
+  /* Deployed on Vercel — API routes run server-side */
 };
 
 export default nextConfig;

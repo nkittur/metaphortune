@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 type Mode = "generate" | "write";
+type ModelId = "claude-sonnet-4-5-20250929" | "claude-opus-4-6";
 
 interface GeneratedSentence {
   text: string;
@@ -48,6 +49,7 @@ function gradeBg(grade: string): string {
 
 export default function Home() {
   const [mode, setMode] = useState<Mode>("generate");
+  const [model, setModel] = useState<ModelId>("claude-sonnet-4-5-20250929");
   const [topic, setTopic] = useState("");
   const [sentence, setSentence] = useState("");
   const [loading, setLoading] = useState(false);
@@ -65,7 +67,7 @@ export default function Home() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ topic, model }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
@@ -85,7 +87,7 @@ export default function Home() {
       const res = await fetch("/api/grade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, sentence }),
+        body: JSON.stringify({ topic, sentence, model }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
@@ -181,6 +183,29 @@ export default function Home() {
               />
             </div>
           )}
+
+          {/* Model Selector */}
+          <div className="flex items-center gap-3">
+            <label
+              htmlFor="model"
+              className="text-sm font-medium text-zinc-400 shrink-0"
+            >
+              Model
+            </label>
+            <select
+              id="model"
+              value={model}
+              onChange={(e) => setModel(e.target.value as ModelId)}
+              className="flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+            >
+              <option value="claude-sonnet-4-5-20250929">
+                Sonnet 4.5 (recommended)
+              </option>
+              <option value="claude-opus-4-6">
+                Opus 4.6 (highest quality)
+              </option>
+            </select>
+          </div>
 
           <button
             onClick={mode === "generate" ? handleGenerate : handleGrade}
@@ -369,8 +394,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-zinc-800 mt-16">
         <div className="mx-auto max-w-3xl px-6 py-6 text-center text-xs text-zinc-600">
-          Powered by Claude Opus &middot; Metaphors should make your brain
-          stutter
+          Powered by Claude &middot; Metaphors should make your brain stutter
         </div>
       </footer>
     </div>
