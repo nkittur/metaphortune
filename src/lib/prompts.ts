@@ -6,17 +6,40 @@ export type Approach = "default" | "niki";
 
 export function buildGeneratePrompt(topic: string, approach: Approach = "niki"): string {
   if (approach === "default") {
-    return buildDefaultGeneratePrompt(topic);
+    return buildDefaultGenerateOnly(topic);
   }
   return buildNikiGeneratePrompt(topic);
 }
 
-function buildDefaultGeneratePrompt(topic: string): string {
+// Default approach: generation only — no evaluation criteria to avoid contamination
+function buildDefaultGenerateOnly(topic: string): string {
   return `You are writing the first sentence of a novel about: "${topic}"
 
 The sentence will take the form: "[Concrete thing] [verb] like [metaphor]."
 
-Generate 5 first lines, then evaluate each metaphor by asking:
+Generate 5 opening sentences. Focus purely on craft — surprise yourself. Reach for metaphors from unexpected domains. Compress each to the fewest possible words.
+
+Format your response as JSON with this structure:
+{
+  "sentences": [
+    "The opening sentence",
+    "Another opening sentence"
+  ]
+}
+
+Return ONLY valid JSON, no markdown code fences.`;
+}
+
+// Default approach: evaluate sentences generated in the first call
+export function buildDefaultEvaluatePrompt(topic: string, sentences: string[]): string {
+  const numbered = sentences.map((s, i) => `${i + 1}. "${s}"`).join("\n");
+
+  return `A writer is working on the first sentence of a novel about: "${topic}"
+
+They have generated these candidate opening sentences:
+${numbered}
+
+Evaluate each metaphor by asking:
 1. Did my brain stutter? Not "could it stutter" but "did it" — was there a half-second where meaning was suspended before it arrived?
 2. Is this a single loaded noun, or am I explaining a concept? If it can be compressed further without losing the feeling, compress it. If the compressed version already exists in my list, delete the uncompressed one.
 3. Does the metaphor carry the correct social/emotional texture? Not just the right structure or physical property, but the right vibe, the right attitude, the right relationship between the thing and the people experiencing it?
@@ -37,10 +60,9 @@ For each sentence, assign a grade (A+, A, A-, B+, B, B-, C+, C) based on:
 
 Format your response as JSON with this structure:
 {
-  "exploration": "Brief initial thoughts on the topic's emotional landscape",
   "sentences": [
     {
-      "text": "The opening sentence",
+      "text": "The opening sentence (exactly as provided)",
       "evaluation": "Brief evaluation of why this works or doesn't",
       "grade": "A+",
       "grade_reasoning": "Why this grade"
