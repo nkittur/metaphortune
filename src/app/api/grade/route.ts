@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { SYSTEM_PROMPT, buildGradePrompt } from "@/lib/prompts";
+import { extractJson } from "@/lib/extract-json";
 
 const ALLOWED_MODELS = [
   "claude-sonnet-4-5-20250929",
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const parsed = JSON.parse(content.text);
+    const parsed = extractJson(content.text);
     return NextResponse.json(parsed);
   } catch (error: unknown) {
     console.error("Grade error:", error);
