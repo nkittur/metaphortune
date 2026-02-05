@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { SYSTEM_PROMPT, buildGeneratePrompt } from "@/lib/prompts";
+import { SYSTEM_PROMPT, buildGeneratePrompt, Approach } from "@/lib/prompts";
 import { extractJson } from "@/lib/extract-json";
 
 const ALLOWED_MODELS = [
@@ -12,7 +12,10 @@ const client = new Anthropic();
 
 export async function POST(request: NextRequest) {
   try {
-    const { topic, model } = await request.json();
+    const { topic, model, approach } = await request.json();
+
+    const selectedApproach: Approach =
+      approach === "default" || approach === "niki" ? approach : "niki";
 
     if (!topic || typeof topic !== "string" || topic.trim().length === 0) {
       return NextResponse.json(
@@ -30,7 +33,7 @@ export async function POST(request: NextRequest) {
       max_tokens: 2048,
       system: SYSTEM_PROMPT,
       messages: [
-        { role: "user", content: buildGeneratePrompt(topic.trim()) },
+        { role: "user", content: buildGeneratePrompt(topic.trim(), selectedApproach) },
       ],
     });
 

@@ -2,7 +2,56 @@ export const SYSTEM_PROMPT = `You are a master literary craftsperson who special
 
 You follow a rigorous creative and evaluative process.`;
 
-export function buildGeneratePrompt(topic: string): string {
+export type Approach = "default" | "niki";
+
+export function buildGeneratePrompt(topic: string, approach: Approach = "niki"): string {
+  if (approach === "default") {
+    return buildDefaultGeneratePrompt(topic);
+  }
+  return buildNikiGeneratePrompt(topic);
+}
+
+function buildDefaultGeneratePrompt(topic: string): string {
+  return `You are writing the first sentence of a novel about: "${topic}"
+
+The sentence will take the form: "[Concrete thing] [verb] like [metaphor]."
+
+Generate 5 first lines, then evaluate each metaphor by asking:
+1. Did my brain stutter? Not "could it stutter" but "did it" — was there a half-second where meaning was suspended before it arrived?
+2. Is this a single loaded noun, or am I explaining a concept? If it can be compressed further without losing the feeling, compress it. If the compressed version already exists in my list, delete the uncompressed one.
+3. Does the metaphor carry the correct social/emotional texture? Not just the right structure or physical property, but the right vibe, the right attitude, the right relationship between the thing and the people experiencing it?
+4. Am I generating new territory or rewording something I already found? If I'm orbiting the same idea in different words, stop and move to a different domain entirely.
+
+The test for a great metaphor:
+* You cannot immediately paraphrase why it works
+* It names something rather than describing something
+* The reader has to retrieve a felt experience from memory to understand it
+* It carries social/emotional texture, not just structural similarity
+* It sounds inevitable once you've heard it, but you wouldn't have thought of it yourself
+
+For each sentence, assign a grade (A+, A, A-, B+, B, B-, C+, C) based on:
+- A+: Brain stutters. Cannot paraphrase why it works. Names rather than describes. Carries full social/emotional texture. Sounds inevitable but surprising.
+- A: Strong stutter. Mostly names. Good texture. Minor room for compression.
+- B: Some gap for the reader. Texture present but may lean on familiar territory. Could be sharper.
+- C: Describes rather than names. Reader doesn't need to retrieve anything. Paraphrasable.
+
+Format your response as JSON with this structure:
+{
+  "exploration": "Brief initial thoughts on the topic's emotional landscape",
+  "sentences": [
+    {
+      "text": "The opening sentence",
+      "evaluation": "Brief evaluation of why this works or doesn't",
+      "grade": "A+",
+      "grade_reasoning": "Why this grade"
+    }
+  ]
+}
+
+Return ONLY valid JSON, no markdown code fences.`;
+}
+
+function buildNikiGeneratePrompt(topic: string): string {
   return `You are writing the first sentence of a novel about: "${topic}"
 
 The sentence will take the form: "[Concrete thing] [verb] like [metaphor]."

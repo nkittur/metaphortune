@@ -4,6 +4,7 @@ import { useState } from "react";
 
 type Mode = "generate" | "write";
 type ModelId = "claude-sonnet-4-5-20250929" | "claude-opus-4-6";
+type Approach = "default" | "niki";
 
 interface GeneratedSentence {
   text: string;
@@ -50,6 +51,7 @@ function gradeBg(grade: string): string {
 export default function Home() {
   const [mode, setMode] = useState<Mode>("generate");
   const [model, setModel] = useState<ModelId>("claude-sonnet-4-5-20250929");
+  const [approach, setApproach] = useState<Approach>("niki");
   const [topic, setTopic] = useState("");
   const [sentence, setSentence] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,7 +69,7 @@ export default function Home() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, model }),
+        body: JSON.stringify({ topic, model, approach }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
@@ -164,6 +166,43 @@ export default function Home() {
               className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-zinc-100 placeholder-zinc-500 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
             />
           </div>
+
+          {mode === "generate" && (
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Prompt Approach
+              </label>
+              <div className="flex gap-1 rounded-lg bg-zinc-900 p-1">
+                <button
+                  type="button"
+                  onClick={() => setApproach("default")}
+                  className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    approach === "default"
+                      ? "bg-zinc-700 text-zinc-50 shadow-sm"
+                      : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                >
+                  Default
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setApproach("niki")}
+                  className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    approach === "niki"
+                      ? "bg-zinc-700 text-zinc-50 shadow-sm"
+                      : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                >
+                  Niki&rsquo;s Approach
+                </button>
+              </div>
+              <p className="mt-1.5 text-xs text-zinc-500">
+                {approach === "default"
+                  ? "Generates and evaluates metaphors directly."
+                  : "Explores emotional texture first, then generates from different domains."}
+              </p>
+            </div>
+          )}
 
           {mode === "write" && (
             <div>
