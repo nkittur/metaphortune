@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     const selectedModel = ALLOWED_MODELS.includes(model)
       ? model
-      : "claude-sonnet-4-5-20250929";
+      : "claude-opus-4-6";
 
     const message = await client.messages.create({
       model: selectedModel,
