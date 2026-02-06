@@ -198,7 +198,7 @@ export default function Home() {
               </div>
               <p className="mt-1.5 text-xs text-zinc-500">
                 {approach === "default"
-                  ? "Generates and evaluates metaphors directly."
+                  ? "Generates metaphors first, then evaluates separately to avoid rubric contamination."
                   : "Explores emotional texture first, then generates from different domains."}
               </p>
             </div>

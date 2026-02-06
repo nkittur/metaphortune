@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { SYSTEM_PROMPT, buildGeneratePrompt, Approach } from "@/lib/prompts";
+import {
+  SYSTEM_PROMPT,
+  buildGeneratePrompt,
+  buildDefaultEvaluatePrompt,
+  Approach,
+} from "@/lib/prompts";
 import { extractJson } from "@/lib/extract-json";
 
 const ALLOWED_MODELS = [
@@ -28,12 +33,57 @@ export async function POST(request: NextRequest) {
       ? model
       : "claude-opus-4-6";
 
+    if (selectedApproach === "default") {
+      // Two-call flow: generate without rubric, then evaluate separately
+      const genMessage = await client.messages.create({
+        model: selectedModel,
+        max_tokens: 1024,
+        system: SYSTEM_PROMPT,
+        messages: [
+          { role: "user", content: buildGeneratePrompt(topic.trim(), "default") },
+        ],
+      });
+
+      const genContent = genMessage.content[0];
+      if (genContent.type !== "text") {
+        return NextResponse.json(
+          { error: "Unexpected response format." },
+          { status: 500 }
+        );
+      }
+
+      const genParsed = extractJson(genContent.text) as { sentences: string[] };
+      const sentences = genParsed.sentences;
+
+      // Second call: evaluate the generated sentences
+      const evalMessage = await client.messages.create({
+        model: selectedModel,
+        max_tokens: 2048,
+        system: SYSTEM_PROMPT,
+        messages: [
+          { role: "user", content: buildDefaultEvaluatePrompt(topic.trim(), sentences) },
+        ],
+      });
+
+      const evalContent = evalMessage.content[0];
+      if (evalContent.type !== "text") {
+        return NextResponse.json(
+          { error: "Unexpected response format." },
+          { status: 500 }
+        );
+      }
+
+      const evalParsed = extractJson(evalContent.text);
+      return NextResponse.json(evalParsed);
+    }
+
+    // Niki's approach: single call (evaluation is part of the creative process)
     const message = await client.messages.create({
       model: selectedModel,
       max_tokens: 2048,
       system: SYSTEM_PROMPT,
       messages: [
-        { role: "user", content: buildGeneratePrompt(topic.trim(), selectedApproach) },
+        { role: "user", content: buildGeneratePrompt(topic.trim(), "niki") },
       ],
     });
 
